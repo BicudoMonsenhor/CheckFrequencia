@@ -19,7 +19,7 @@
         h1 {
             margin-top: 20px;
             font-size: 2rem;
-            color: hsl(212, 80%, 49%);
+            color: #0d8bb1;
         }
 
         #fileInput {
@@ -27,17 +27,27 @@
         }
 
         button {
-            background-color: hsl(212, 77%, 67%);
-            color: white;
-            padding: 10px 20px;
-            border: none;
-            border-radius: 5px;
-            cursor: pointer;
-            font-size: 1rem;
+    background-color: #4CAF50;
+    color: white;
+    padding: 5px 10px; /* Tamanho do botão */
+    border: none;
+    border-radius: 5px;
+    cursor: pointer;
+    font-size: 0.8rem;
+    margin-right: 10px; /* Espaço à direita para todos os botões */
+}
+        button:hover {
+            background-color: #0d8bb1;
         }
 
-        button:hover {
-            background-color: hsl(212, 77%, 67%);
+        #clearButton {
+            background-color: #0d8bb1;
+          
+           
+        }
+
+        #clearButton:hover {
+            background-color: #1707f1;
         }
 
         table {
@@ -49,24 +59,24 @@
         }
 
         th, td {
-            border: 1px solid #050505;
+            border: 1px solid #0e0d0d;
             padding: 12px;
             text-align: center;
         }
 
         th {
-            background-color: hsl(212, 77%, 67%);
-            color: rgb(17, 17, 17);
+            background-color: #1075e9;
+            color: white;
             font-size: 1.1rem;
         }
 
         td {
-            background-color: rgb(170, 204, 233);
+            background-color: #87c0e6;
             font-size: 1rem;
         }
 
         .green {
-            background-color: hsl(106, 87%, 53%);
+            background-color: #65e953;
             color: white;
         }
 
@@ -109,6 +119,7 @@
     <h1>Check List de Presença</h1>
     <input type="file" id="fileInput" />
     <button onclick="loadFile()">Carregar Lista de Alunos</button>
+    <button id="clearButton" onclick="clearAllData()">Limpar Todos os Dados</button>
 
     <table id="attendanceTable">
         <thead>
@@ -198,6 +209,21 @@
                 const row = button.parentNode.parentNode;
                 row.parentNode.removeChild(row);
                 saveToLocalStorage();
+            } else {
+                alert("Senha incorreta!");
+            }
+        }
+
+        // Função para apagar todos os dados com senha
+        function clearAllData() {
+            const password = prompt("Insira a senha para limpar todos os dados:");
+            if (password === "1234") {
+                // Limpa todos os dados da tabela
+                const tableBody = document.getElementById('attendanceTable').getElementsByTagName('tbody')[0];
+                tableBody.innerHTML = "";
+                // Remove os dados do localStorage
+                localStorage.removeItem('attendanceData');
+                alert("Todos os dados foram apagados.");
             } else {
                 alert("Senha incorreta!");
             }
