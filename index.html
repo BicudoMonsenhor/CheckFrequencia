@@ -19,7 +19,7 @@
         h1 {
             margin-top: 20px;
             font-size: 2rem;
-            color: #4CAF50;
+            color: hsl(212, 80%, 49%);
         }
 
         #fileInput {
@@ -27,7 +27,7 @@
         }
 
         button {
-            background-color: #4CAF50;
+            background-color: hsl(212, 77%, 67%);
             color: white;
             padding: 10px 20px;
             border: none;
@@ -37,7 +37,7 @@
         }
 
         button:hover {
-            background-color: #45a049;
+            background-color: hsl(212, 77%, 67%);
         }
 
         table {
@@ -49,24 +49,24 @@
         }
 
         th, td {
-            border: 1px solid #ddd;
+            border: 1px solid #050505;
             padding: 12px;
             text-align: center;
         }
 
         th {
-            background-color: #4CAF50;
-            color: white;
+            background-color: hsl(212, 77%, 67%);
+            color: rgb(17, 17, 17);
             font-size: 1.1rem;
         }
 
         td {
-            background-color: white;
+            background-color: rgb(170, 204, 233);
             font-size: 1rem;
         }
 
         .green {
-            background-color: #4CAF50;
+            background-color: hsl(106, 87%, 53%);
             color: white;
         }
 
@@ -157,26 +157,26 @@
             newRow.insertCell(0).innerHTML = aluno;
             newRow.insertCell(1).innerHTML = tutor;
             for (let i = 0; i < 5; i++) {
-                newRow.insertCell(2 + i).innerHTML = `<input type="checkbox" class="dayCheckbox" />`;
+                newRow.insertCell(2 + i).innerHTML = `<input type="checkbox" class="dayCheckbox" checked />`; // Inicia marcado (presente)
             }
             const statusCell = newRow.insertCell(7);
             statusCell.classList.add('statusCell');
             newRow.insertCell(8).innerHTML = `<button onclick="deleteRow(this)">Apagar</button>`;
-            updateStatus(newRow);
+            updateStatus(newRow); // Calcula o status inicial
         }
 
         // Função para calcular o status com base nas faltas de forma decrescente
         function updateStatus(row) {
             const checkboxes = row.querySelectorAll('.dayCheckbox');
-            let totalAbsent = 0; // Contador de ausências
+            let totalPresent = 0; // Contador de presença
             checkboxes.forEach(checkbox => {
-                if (!checkbox.checked) totalAbsent++; // Conta as ausências (checkboxes não marcados)
+                if (checkbox.checked) totalPresent++; // Conta os presentes (checkboxes marcados)
                 checkbox.addEventListener('change', () => {
                     updateStatus(row);
                     saveToLocalStorage();
                 });
             });
-            const percentage = ((5 - totalAbsent) / checkboxes.length) * 100; // Calcula a presença
+            const percentage = (totalPresent / checkboxes.length) * 100; // Calcula a presença decrescente
             const statusCell = row.querySelector('.statusCell');
             statusCell.classList.remove('green', 'yellow', 'red');
             if (percentage === 100) {
