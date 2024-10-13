@@ -1,0 +1,239 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Check List de Presença</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            margin: 0;
+            padding: 0;
+            background-color: #f4f4f9;
+            color: #333;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+        }
+
+        h1 {
+            margin-top: 20px;
+            font-size: 2rem;
+            color: #4CAF50;
+        }
+
+        #fileInput {
+            margin: 20px;
+        }
+
+        button {
+            background-color: #4CAF50;
+            color: white;
+            padding: 10px 20px;
+            border: none;
+            border-radius: 5px;
+            cursor: pointer;
+            font-size: 1rem;
+        }
+
+        button:hover {
+            background-color: #45a049;
+        }
+
+        table {
+            width: 90%;
+            max-width: 1200px;
+            margin: 20px auto;
+            border-collapse: collapse;
+            box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
+        }
+
+        th, td {
+            border: 1px solid #ddd;
+            padding: 12px;
+            text-align: center;
+        }
+
+        th {
+            background-color: #4CAF50;
+            color: white;
+            font-size: 1.1rem;
+        }
+
+        td {
+            background-color: white;
+            font-size: 1rem;
+        }
+
+        .green {
+            background-color: #4CAF50;
+            color: white;
+        }
+
+        .yellow {
+            background-color: #ffeb3b;
+            color: #333;
+        }
+
+        .red {
+            background-color: #f44336;
+            color: white;
+        }
+
+        input[type="checkbox"] {
+            transform: scale(1.2);
+        }
+
+        @media only screen and (max-width: 768px) {
+            h1 {
+                font-size: 1.5rem;
+            }
+
+            button {
+                font-size: 0.9rem;
+                padding: 8px 16px;
+            }
+
+            table {
+                width: 100%;
+            }
+
+            th, td {
+                padding: 8px;
+                font-size: 0.9rem;
+            }
+        }
+    </style>
+</head>
+<body>
+    <h1>Check List de Presença</h1>
+    <input type="file" id="fileInput" />
+    <button onclick="loadFile()">Carregar Lista de Alunos</button>
+
+    <table id="attendanceTable">
+        <thead>
+            <tr>
+                <th>Aluno</th>
+                <th>Tutor</th>
+                <th>Seg</th>
+                <th>Ter</th>
+                <th>Qua</th>
+                <th>Qui</th>
+                <th>Sex</th>
+                <th>Status</th>
+                <th>Apagar</th>
+            </tr>
+        </thead>
+        <tbody>
+        </tbody>
+    </table>
+
+    <script>
+        // Função para carregar arquivo txt e inserir alunos e tutores na tabela
+        function loadFile() {
+            const input = document.getElementById('fileInput').files[0];
+            if (!input) {
+                alert("Por favor, selecione um arquivo.");
+                return;
+            }
+            const reader = new FileReader();
+            reader.onload = function(e) {
+                const lines = e.target.result.split('\n');
+                lines.forEach(line => {
+                    const [aluno, tutor] = line.split(',').map(item => item.trim());
+                    if (aluno && tutor) {
+                        addRow(aluno, tutor);
+                    }
+                });
+                saveToLocalStorage(); // Salva a tabela após carregar os dados
+            };
+            reader.readAsText(input);
+        }
+
+        // Função para adicionar linhas à tabela
+        function addRow(aluno, tutor) {
+            const table = document.getElementById('attendanceTable').getElementsByTagName('tbody')[0];
+            const newRow = table.insertRow();
+            newRow.insertCell(0).innerHTML = aluno;
+            newRow.insertCell(1).innerHTML = tutor;
+            for (let i = 0; i < 5; i++) {
+                newRow.insertCell(2 + i).innerHTML = `<input type="checkbox" class="dayCheckbox" />`;
+            }
+            const statusCell = newRow.insertCell(7);
+            statusCell.classList.add('statusCell');
+            newRow.insertCell(8).innerHTML = `<button onclick="deleteRow(this)">Apagar</button>`;
+            updateStatus(newRow);
+        }
+
+        // Função para calcular o status com base nas faltas de forma decrescente
+        function updateStatus(row) {
+            const checkboxes = row.querySelectorAll('.dayCheckbox');
+            let totalAbsent = 0; // Contador de ausências
+            checkboxes.forEach(checkbox => {
+                if (!checkbox.checked) totalAbsent++; // Conta as ausências (checkboxes não marcados)
+                checkbox.addEventListener('change', () => {
+                    updateStatus(row);
+                    saveToLocalStorage();
+                });
+            });
+            const percentage = ((5 - totalAbsent) / checkboxes.length) * 100; // Calcula a presença
+            const statusCell = row.querySelector('.statusCell');
+            statusCell.classList.remove('green', 'yellow', 'red');
+            if (percentage === 100) {
+                statusCell.innerHTML = '100%';
+                statusCell.classList.add('green');
+            } else if (percentage >= 80 && percentage < 100) {
+                statusCell.innerHTML = `${percentage}%`;
+                statusCell.classList.add('yellow');
+            } else {
+                statusCell.innerHTML = `${percentage}%`;
+                statusCell.classList.add('red');
+            }
+        }
+
+        // Função para apagar linha com senha
+        function deleteRow(button) {
+            const password = prompt("Insira a senha para apagar:");
+            if (password === "1234") {
+                const row = button.parentNode.parentNode;
+                row.parentNode.removeChild(row);
+                saveToLocalStorage();
+            } else {
+                alert("Senha incorreta!");
+            }
+        }
+
+        // Função para salvar os dados no localStorage
+        function saveToLocalStorage() {
+            const rows = document.querySelectorAll('#attendanceTable tbody tr');
+            const data = [];
+            rows.forEach(row => {
+                const aluno = row.cells[0].innerText;
+                const tutor = row.cells[1].innerText;
+                const days = [];
+                for (let i = 2; i < 7; i++) {
+                    days.push(row.cells[i].querySelector('input').checked);
+                }
+                data.push({ aluno, tutor, days });
+            });
+            localStorage.setItem('attendanceData', JSON.stringify(data));
+        }
+
+        // Função para carregar os dados do localStorage ao recarregar a página
+        window.onload = function() {
+            const data = JSON.parse(localStorage.getItem('attendanceData'));
+            if (data && data.length > 0) {
+                data.forEach(item => {
+                    addRow(item.aluno, item.tutor);
+                    const rows = document.querySelectorAll('#attendanceTable tbody tr');
+                    const checkboxes = rows[rows.length - 1].querySelectorAll('.dayCheckbox');
+                    item.days.forEach((day, index) => {
+                        checkboxes[index].checked = day;
+                    });
+                    updateStatus(rows[rows.length - 1]);
+                });
+            }
+        };
+    </script>
+</body>
+</html>
